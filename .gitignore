@@ -1,1 +1,3 @@
-./charts/*
+# Helm dependencies
+charts/
+values.yaml
