@@ -1,0 +1,264 @@
+# =============================================================================
+# pg-fds--be/values.yaml
+# These values feed the `common.*` named templates from the `common`
+# library chart (see templates/all.yaml). The common chart's own
+# values.yaml is NOT merged in automatically — this file is the single
+# source of truth.
+# =============================================================================
+
+nameOverride: ""
+fullnameOverride: ""
+
+# =============================================================================
+# IMAGE
+# =============================================================================
+image:
+  repository: ghcr.io/gunturginting/pg-fds-be
+  pullPolicy: IfNotPresent
+  tag: ""   # defaults to .Chart.AppVersion
+
+imagePullSecrets: []
+# - name: ghcr-secret
+
+# =============================================================================
+# REPLICAS & STRATEGY
+# =============================================================================
+replicaCount: 2
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# =============================================================================
+# SERVICE ACCOUNT
+# =============================================================================
+serviceAccount:
+  create: true
+  annotations: {}
+  automountServiceAccountToken: false
+  name: ""
+
+# =============================================================================
+# POD-LEVEL CONFIG
+# =============================================================================
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+nodeSelector: {}
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - "{{ include \"common.name\" . }}"
+          topologyKey: kubernetes.io/hostname
+
+topologySpreadConstraints: []
+priorityClassName: ""
+terminationGracePeriodSeconds: 60
+
+# =============================================================================
+# CONTAINER-LEVEL CONFIG
+# =============================================================================
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# =============================================================================
+# PROBES
+# =============================================================================
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /ready
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+startupProbe:
+  enabled: false
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 30
+
+# =============================================================================
+# SERVICE  ->  common.service
+# =============================================================================
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+  protocol: TCP
+  additionalPorts: []
+  annotations: {}
+
+# =============================================================================
+# INGRESS  ->  common.ingress
+# =============================================================================
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: pg-fds-be.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# =============================================================================
+# AUTOSCALING  ->  common.hpa
+# =============================================================================
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  customMetrics: []
+
+# =============================================================================
+# CONFIGMAP  ->  common.configmap
+# =============================================================================
+configMap:
+  enabled: true
+  data:
+    APP_ENV: production
+    LOG_LEVEL: info
+    LOG_FORMAT: json
+
+# =============================================================================
+# EXTERNAL SECRET  ->  common.externalsecret
+# Replaces a raw v1/Secret. The Operator materializes a Secret named
+# common.secretName, which common.deployment mounts via envFrom.
+# =============================================================================
+externalSecret:
+  enabled: false
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: ""              # defaults to "<fullname>-secret"
+    creationPolicy: Owner
+    template: {}
+  data: []
+  # - secretKey: DB_PASSWORD
+  #   remoteRef:
+  #     key: secret/data/pg-fds-be
+  #     property: db_password
+  # - secretKey: DB_USERNAME
+  #   remoteRef:
+  #     key: secret/data/pg-fds-be
+  #     property: db_username
+  dataFrom: []
+  # - extract:
+  #     key: secret/data/pg-fds-be
+
+# =============================================================================
+# PERSISTENCE  ->  common.pvc
+# =============================================================================
+persistence:
+  enabled: false
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  storageClassName: ""
+  mountPath: /data
+  annotations: {}
+
+# =============================================================================
+# VIRTUAL SERVICE (Istio)  ->  common.virtualservice
+# Use instead of (or alongside) common.ingress when the cluster routes via
+# Istio's ingress gateway.
+# =============================================================================
+virtualService:
+  enabled: false
+  gateways:
+    - istio-system/main-gateway
+  hosts:
+    - pg-fds-be.example.com
+  http: []
+  # - match:
+  #     - uri:
+  #         prefix: /api
+  #   route:
+  #     - destination:
+  #         host: "{{ include \"common.fullname\" . }}"
+  #         port:
+  #           number: 80
+
+# =============================================================================
+# ADVANCED WORKLOAD PATTERNS — passed through verbatim to common.deployment
+# =============================================================================
+extraEnv: []
+# - name: POD_NAME
+#   valueFrom:
+#     fieldRef:
+#       fieldPath: metadata.name
+
+extraEnvFrom: []
+
+initContainers: []
+# - name: db-migrate
+#   image: ghcr.io/gunturginting/pg-fds-be:1.0.0
+#   command: ["./migrate", "up"]
+#   securityContext:
+#     runAsNonRoot: true
+#     runAsUser: 1000
+#     allowPrivilegeEscalation: false
+#     readOnlyRootFilesystem: true
+#     capabilities:
+#       drop: [ALL]
+
+sidecars: []
+
+extraVolumes: []
+extraVolumeMounts: []
+extraContainerPorts: []

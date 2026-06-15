@@ -1,0 +1,9 @@
+{{ include "common.configmap" . }}
+{{ include "common.deployment" . }}
+{{ include "common.externalsecret" . }}
+{{ include "common.hpa" . }}
+{{ include "common.ingress" . }}
+{{ include "common.pvc" . }}
+{{ include "common.service" . }}
+{{ include "common.serviceaccount" . }}
+{{ include "common.virtualservice" . }}

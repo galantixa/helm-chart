@@ -1,0 +1,78 @@
+name: Publish common library chart (OCI)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "common/**"
+      - ".github/workflows/publish-common.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: publish-common
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  lint:
+    name: Lint common chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: "3.14.0"
+
+      - name: helm lint
+        run: helm lint common/ --strict
+
+      - name: Render against a dummy consumer (sanity check)
+        run: |
+          helm package common/ -d /tmp/common-check
+
+  publish:
+    name: Push to ghcr.io (OCI)
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: "3.14.0"
+
+      - name: Read chart version
+        id: chart
+        run: |
+          VERSION=$(grep '^version:' common/Chart.yaml | awk '{print $2}')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io \
+            --username ${{ github.actor }} \
+            --password-stdin
+
+      - name: Package chart
+        run: helm package common/ -d .cr-release-packages
+      - name: Push to OCI registry
+        run: |
+          CHART_PACKAGE=$(ls .cr-release-packages/common-*.tgz)
+          helm push "$CHART_PACKAGE" "oci://ghcr.io/${{ github.repository_owner }}/helm-chart"
+
+      - name: Make package public (GHCR defaults to private)
+        run: |
+          echo "::notice::Visit https://github.com/users/${{ github.repository_owner }}/packages/container/helm-chart%2Fcommon/settings to set package visibility to Public if consumers outside this org need pull access."
+
+      - name: Summary
+        run: |
+          echo "### Published \`common\` v${{ steps.chart.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "oci://ghcr.io/${{ github.repository_owner }}/helm-chart/common:${{ steps.chart.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

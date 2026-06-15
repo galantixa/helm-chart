@@ -1,0 +1,21 @@
+apiVersion: v2
+name: common
+description: |
+  Shared library chart providing reusable, hardened Kubernetes resource
+  templates (Deployment, Service, Ingress, HPA, ConfigMap, ExternalSecret,
+  PVC, ServiceAccount, VirtualService) via named templates.
+
+  This chart renders NO resources on its own — it only exposes
+  `common.*` named templates to be `include`-d by application charts
+  via templates/all.yaml.
+type: library
+version: 1.0.1
+appVersion: "1.0.1"
+keywords:
+  - library
+  - common
+  - helpers
+maintainers:
+  - name: gunturginting
+sources:
+  - https://github.com/galantixa/helm-chart
