@@ -2,7 +2,7 @@
 
 A "write-once, use-many" Helm setup: all Kubernetes resource logic lives in
 the `common` library chart (published as an OCI artifact to GHCR). Every
-microservice chart (e.g. `pg-fds--be`) becomes just three files:
+microservice chart becomes just three files:
 `Chart.yaml`, `values.yaml`, and a 9-line `templates/all.yaml`.
 
 ## Structure
@@ -79,13 +79,13 @@ Copy `pg-fds--be/` to `new-service/`, edit `Chart.yaml` (name) and
 
 ## Feature matrix (all driven by values.yaml, zero template edits)
 
-| Feature | values.yaml key | Backing resource |
-|---|---|---|
-| App config | `configMap.*` | ConfigMap |
-| Secrets | `externalSecret.*` | ExternalSecret (ESO) -> Secret |
-| Persistent storage | `persistence.*` | PersistentVolumeClaim |
-| HTTP ingress (nginx/alb/etc) | `ingress.*` | Ingress |
-| Service mesh routing | `virtualService.*` | Istio VirtualService |
-| Autoscaling | `autoscaling.*` | HorizontalPodAutoscaler |
-| Extra containers | `initContainers`, `sidecars` | Deployment spec |
-| Extra volumes | `extraVolumes`, `extraVolumeMounts` | Deployment spec |
+| Feature                      | values.yaml key                     | Backing resource               |
+| ---------------------------- | ----------------------------------- | ------------------------------ |
+| App config                   | `configMap.*`                       | ConfigMap                      |
+| Secrets                      | `externalSecret.*`                  | ExternalSecret (ESO) -> Secret |
+| Persistent storage           | `persistence.*`                     | PersistentVolumeClaim          |
+| HTTP ingress (nginx/alb/etc) | `ingress.*`                         | Ingress                        |
+| Service mesh routing         | `virtualService.*`                  | Istio VirtualService           |
+| Autoscaling                  | `autoscaling.*`                     | HorizontalPodAutoscaler        |
+| Extra containers             | `initContainers`, `sidecars`        | Deployment spec                |
+| Extra volumes                | `extraVolumes`, `extraVolumeMounts` | Deployment spec                |
