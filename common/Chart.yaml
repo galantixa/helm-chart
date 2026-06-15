@@ -1,5 +1,5 @@
 apiVersion: v2
-name: common
+name: helm-template
 description: |
   Shared library chart providing reusable, hardened Kubernetes resource
   templates (Deployment, Service, Ingress, HPA, ConfigMap, ExternalSecret,
@@ -16,6 +16,6 @@ keywords:
   - common
   - helpers
 maintainers:
-  - name: gunturginting
+  - name: Galantixa
 sources:
   - https://github.com/galantixa/helm-chart
