@@ -62,9 +62,9 @@ jobs:
         run: helm package common/ -d .cr-release-packages
       - name: Push to OCI registry
         run: |
-          CHART_PACKAGE=$(ls .cr-release-packages/common-*.tgz)
+          CHART_PACKAGE=$(ls .cr-release-packages/helm-template-*.tgz)
           helm push "$CHART_PACKAGE" "oci://ghcr.io/${{ github.repository_owner }}/helm-chart"
-
+  
       - name: Make package public (GHCR defaults to private)
         run: |
           echo "::notice::Visit https://github.com/users/${{ github.repository_owner }}/packages/container/helm-chart%2Fcommon/settings to set package visibility to Public if consumers outside this org need pull access."
