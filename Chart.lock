@@ -1,0 +1,6 @@
+dependencies:
+- name: helm-template
+  repository: oci://ghcr.io/galantixa/helm-chart
+  version: 1.0.1
+digest: sha256:5ce1f2130250329c8abc108b3dec99fdca6c0bf39d086a97d27a80da3ff0799b
+generated: "2026-06-15T21:40:03.524308+07:00"

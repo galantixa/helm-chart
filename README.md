@@ -40,7 +40,7 @@ microservice chart becomes just three files:
    ```bash
    git push origin main   # triggers .github/workflows/publish-common.yml
    ```
-   Then set the resulting package (`helm-chart/common`) to **Public** under
+   Then set the resulting package (`helm-chart/helm-template`) to **Public** under
    your GitHub org's Packages settings, or configure pull credentials for
    private access.
 
@@ -62,11 +62,11 @@ helm upgrade --install pg-fds-be ./pg-fds--be \
   -f values-prod.yaml
 ```
 
-<!-- ## Adding a new microservice
+## Adding a new microservice
 
-Copy `pg-fds--be/` to `new-service/`, edit `Chart.yaml` (name) and
+Create `new-service/`, edit `Chart.yaml` (name) and
 `values.yaml` (image, env, ingress host, etc.). `templates/all.yaml` needs
-**zero changes** — it's identical across every service. -->
+**zero changes** — it's identical across every service.
 
 ## Bumping common for everyone
 
