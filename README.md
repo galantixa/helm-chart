@@ -62,11 +62,11 @@ helm upgrade --install pg-fds-be ./pg-fds--be \
   -f values-prod.yaml
 ```
 
-## Adding a new microservice
+<!-- ## Adding a new microservice
 
 Copy `pg-fds--be/` to `new-service/`, edit `Chart.yaml` (name) and
 `values.yaml` (image, env, ingress host, etc.). `templates/all.yaml` needs
-**zero changes** — it's identical across every service.
+**zero changes** — it's identical across every service. -->
 
 ## Bumping common for everyone
 
