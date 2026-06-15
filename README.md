@@ -48,16 +48,16 @@ microservice chart becomes just three files:
 
 ```bash
 # 1. Resolve & lock the common dependency
-helm dependency update ./pg-fds--be
-#    -> writes pg-fds--be/Chart.lock and downloads
-#       pg-fds--be/charts/common-1.0.1.tgz
+helm dependency update ./my-service
+#    -> writes my-service/Chart.lock and downloads
+#       my-service/charts/common-1.0.1.tgz
 
 # 2. Lint & render
-helm lint ./pg-fds--be
-helm template pg-fds-be ./pg-fds--be -f values-prod.yaml
+helm lint ./my-service
+helm template pg-fds-be ./my-service -f values-prod.yaml
 
 # 3. Install / upgrade
-helm upgrade --install pg-fds-be ./pg-fds--be \
+helm upgrade --install pg-fds-be ./my-service \
   --namespace production --create-namespace \
   -f values-prod.yaml
 ```
